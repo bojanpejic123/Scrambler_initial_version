@@ -1,0 +1,66 @@
+% Audio Scrambler System Specification
+% Read data from a file named 'previev8.vav'
+signal = audioread('preview8.wav');
+% Play the sound at the 8000 Hz sample rate
+sound(signal,8000);
+% Frame length 8192
+frame_length=8192;
+% The variable s contains the remainder when dividing the length of the read signal and the length of one frame
+s=mod(length(signal),8192);
+% Frame number calculation
+number_of_frames=(length(signal)-s)/8192;
+g=1;
+scrambled_signal=signal;
+
+% Scrambler
+for i=1:number_of_frames
+  n=0;
+  % Divide into 128 parts by 64 selections
+  for j=1:128
+    n=n+64;
+    % Mixing the order of 128 parts by 64 selections
+    scrambled_signal(g+n-64:g+n-1,1:2)=signal(g+8192-n:g+8256-n-1,1:2);
+    % Divide 64 parts into 16 parts by 4 samples
+    m=0;
+    for k=1:16
+      m=m+4;
+      % Mixing the order of 16 sections of 4 selections
+      scrambled_signal1(g+n-68+m:g+n-65+m,1:2)=scrambled_signal(g+n-m:g+n-m+3,1:2);
+    end
+  end
+  % Move on to the next 8192 selections that will be scrambled
+  g=g+frame_length;   
+end
+% Remainder of signal that was not divisible by 8192 is added to scrambled signal 
+scrambled_signal1(g:g+s-1,1:2)=signal(g:g+s-1,1:2);
+% Scrambled signal
+sound(scrambled_signal1,8000); 
+
+% Descrambler
+g=1;
+scrambled_signal2=scrambled_signal1;
+for q=1:number_of_frames
+  n=0;
+  % Divide into 128 parts by 64 selections
+  for j=1:128
+    n=n+64;
+    % Mixing the order of 128 parts by 64 selections
+    scrambled_signal2(g+n-64:g+n-1,1:2)=scrambled_signal1(g+8192-n:g+8256-n-1,1:2);
+    % Divide 64 parts into 16 parts by 4 samples
+    m=0;
+    for e=1:16
+      m=m+4;
+      % Mixing the order of 16 sections of 4 selections
+      scrambled_signal3(g+n-68+m:g+n-65+m,1:2)=scrambled_signal2(g+n-m:g+n-m+3,1:2);
+    end  
+  end
+  % Move on to the next 8192 selections that will be scrambled
+  g=g+frame_length;     
+end
+% Remainder of scrambled_signal1 that was not divisible by 8192 is added to descrambled signal(scrambled_signal3)
+scrambled_signal3(g:g+s-1,1:2)=scrambled_signal1(g:g+s-1,1:2);
+sound(scrambled_signal3,8000); 
+% Descrambled signal
+sound(scrambled_signal3,8000); 
+
+
